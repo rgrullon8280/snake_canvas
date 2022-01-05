@@ -6,12 +6,19 @@ const ROWS = 30;
 const COLS = 50;
 const BOX_SIZE = 10;
 const FILL = BOX_SIZE * .9
+
+function clearTail(tail) {
+    ctx.clearRect(tail[0]*BOX_SIZE, tail[1]*BOX_SIZE,BOX_SIZE,BOX_SIZE);
+    ctx.strokeRect(tail[0] * BOX_SIZE, tail[1] * BOX_SIZE, BOX_SIZE, BOX_SIZE);
+}
+
 let MOVES = {
   LEFT: 0,
   RIGHT: 1,
   UP: 2,
   DOWN: 3
 }
+
 let Snake = {
   init_snake: [
     [0,0],
@@ -27,8 +34,30 @@ let Snake = {
     }
   },
   direction: MOVES.RIGHT,
-  move: function() {
+  addDirection: function (dir) {
+    if ((this.direction === MOVES.RIGHT && dir === MOVES.LEFT) || (this.direction === MOVES.LEFT && dir === MOVES.RIGHT)) {
+      return
+    } else if ((this.direction === MOVES.UP && dir === MOVES.DOWN) || (this.direction === MOVES.UP && dir === MOVES.DOWN)){
+      return
+    }
+    this.direction = dir
+  },
 
+  move: function() {
+    let tail = Snake.current.shift();
+    let head = Snake.current[Snake.current.length - 1];
+    clearTail(tail);
+    let newHead;
+    if (this.direction === MOVES.RIGHT) {
+      newHead = [head[0]+1,head[1]]
+    } else if (this.direction === MOVES.LEFT) {
+      newHead = [head[0]-1,head[1]]
+    } else if (this.direction === MOVES.UP) {
+      newHead = [head[0],head[1]-1]
+    } else if (this.direction === MOVES.DOWN) {
+      newHead = [head[0],head[1]+1]
+    } 
+    Snake.current.push(newHead);
   }
 }
 ctx.canvas.width = CANVAS_WIDTH;
@@ -47,43 +76,33 @@ function initalizeGrid() {
 
 }
 
-function move(event) {
-  console.log(event)
+function handleInput(event) {
   switch (event.key) {
     case "w":
     case "W":
     case "ArrowUp":
-      Snake.direction = MOVES.UP;
+      Snake.addDirection(MOVES.UP);
       break;
     case "d":
     case "D":
     case "ArrowRight":
-      Snake.direction = MOVES.LEFT;
+      Snake.addDirection(MOVES.RIGHT);
       break;
     case "s":
     case "S":
     case "ArrowDown":
-      Snake.direction = MOVES.DOWN;
+      Snake.addDirection(MOVES.DOWN);
       break;
     case "A":
     case "a":
     case "ArrowLeft":
-      Snake.direction = MOVES.RIGHT;
+      Snake.addDirection(MOVES.LEFT);
       break;
   }
 
 }
 function step() {
-  let tail = Snake.current.shift();
-  let head = Snake.current[Snake.current.length - 1];
-
-  ctx.clearRect(tail[0]*BOX_SIZE, tail[1]*BOX_SIZE,BOX_SIZE,BOX_SIZE);
-
-  ctx.strokeRect(tail[0] * BOX_SIZE, tail[1] * BOX_SIZE, BOX_SIZE, BOX_SIZE);
-  
-  Snake.current.push(
-    [head[0]+1,head[1]]
-  );
+  Snake.move();
   Snake.draw();
   setTimeout(() => {
 
@@ -92,8 +111,6 @@ function step() {
 }
 
 
-
-document.addEventListener('keydown', move);
+document.addEventListener('keydown', handleInput);
 initalizeGrid();
-//step();
-
+step();
