@@ -7,7 +7,20 @@ const COLS = 50;
 const BOX_SIZE = 10;
 const FILL = BOX_SIZE * .9
 
+function initializeGrid() {
+  ctx.strokeStyle = "gray"
+  for (let i = 0; i < ROWS; i++) {
+    for (let j = 0; j < COLS; j++) {
+      ctx.strokeRect(j * BOX_SIZE, i * BOX_SIZE, BOX_SIZE, BOX_SIZE);
+
+    }
+  }
+  Snake.body = Snake.init_snake;
+  Snake.draw();
+
+}
 function clearTail(tail) {
+    ctx.strokeStyle = "gray"
     ctx.clearRect(tail[0]*BOX_SIZE, tail[1]*BOX_SIZE,BOX_SIZE,BOX_SIZE);
     ctx.strokeRect(tail[0] * BOX_SIZE, tail[1] * BOX_SIZE, BOX_SIZE, BOX_SIZE);
 }
@@ -27,9 +40,9 @@ let Snake = {
     [3,0],
     [4,0]
   ],
-  current: null,
+  body: null,
   draw: function() {
-    for (let [x, y] of this.current) {
+    for (let [x, y] of this.body) {
       ctx.fillRect(x*BOX_SIZE,y*BOX_SIZE,FILL, FILL);
     }
   },
@@ -44,9 +57,8 @@ let Snake = {
   },
 
   move: function() {
-    let tail = Snake.current.shift();
-    let head = Snake.current[Snake.current.length - 1];
-    clearTail(tail);
+    let tail = Snake.body.shift();
+    let head = Snake.body[Snake.body.length - 1];
     let newHead;
     if (this.direction === MOVES.RIGHT) {
       newHead = [head[0]+1,head[1]]
@@ -57,24 +69,16 @@ let Snake = {
     } else if (this.direction === MOVES.DOWN) {
       newHead = [head[0],head[1]+1]
     } 
-    Snake.current.push(newHead);
+    console.log(newHead);
+    if(!hasCollided(newHead)){
+      clearTail(tail);
+      Snake.body.push(newHead);
+    }
   }
 }
 ctx.canvas.width = CANVAS_WIDTH;
 ctx.canvas.height = CANVAS_HEIGHT;
 
-function initalizeGrid() {
-  ctx.strokeStyle = "gray"
-  for (let i = 0; i < ROWS; i++) {
-    for (let j = 0; j < COLS; j++) {
-      ctx.strokeRect(j * BOX_SIZE, i * BOX_SIZE, BOX_SIZE, BOX_SIZE);
-
-    }
-  }
-  Snake.current = Snake.init_snake;
-  Snake.draw();
-
-}
 
 function handleInput(event) {
   switch (event.key) {
@@ -101,16 +105,25 @@ function handleInput(event) {
   }
 
 }
+function hasCollided([col, row]) {
+  let top = row * BOX_SIZE;
+  let left = col * BOX_SIZE;
+  //console.log(top, left);
+  let ans = false;
+  if ((top >= CANVAS_HEIGHT) || (top < 0) || (left >= CANVAS_WIDTH) || (left < 0)) {
+    ans = true;
+  }
+  
+  return ans
+} 
 
 function step() {
   Snake.move();
-  Snake.draw();
   setTimeout(() => {
   requestAnimationFrame(step);
   }, 1000/10);
+  Snake.draw();
 }
-
-
 document.addEventListener('keydown', handleInput);
-initalizeGrid();
+initializeGrid();
 step();
