@@ -101,11 +101,11 @@ function handleInput(event) {
   }
 
 }
+
 function step() {
   Snake.move();
   Snake.draw();
   setTimeout(() => {
-
   requestAnimationFrame(step);
   }, 1000/10);
 }
