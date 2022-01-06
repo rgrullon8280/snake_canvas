@@ -5,24 +5,29 @@ const CANVAS_HEIGHT = 300;
 const ROWS = 30;
 const COLS = 50;
 const BOX_SIZE = 10;
-const FILL = BOX_SIZE * .9
+const FILL = BOX_SIZE * .8;
+const LINE_WIDTH = 1;
+let GAME_ACTIVE = true;
 
 function initializeGrid() {
   ctx.strokeStyle = "gray"
   for (let i = 0; i < ROWS; i++) {
     for (let j = 0; j < COLS; j++) {
       ctx.strokeRect(j * BOX_SIZE, i * BOX_SIZE, BOX_SIZE, BOX_SIZE);
-
+      console.log(j,i);
     }
   }
   Snake.body = Snake.init_snake;
   Snake.draw();
 
 }
-function clearTail(tail) {
-    ctx.strokeStyle = "gray"
-    ctx.clearRect(tail[0]*BOX_SIZE, tail[1]*BOX_SIZE,BOX_SIZE,BOX_SIZE);
-    ctx.strokeRect(tail[0] * BOX_SIZE, tail[1] * BOX_SIZE, BOX_SIZE, BOX_SIZE);
+function clearTail([col, row]) {
+  console.log(col, row);
+  let top = row * BOX_SIZE;
+  let left = col * BOX_SIZE;
+  ctx.clearRect(left+LINE_WIDTH, top+LINE_WIDTH, FILL, FILL);
+  ctx.strokeStyle = "gray"
+//  ctx.strokeRect(left, top, BOX_SIZE, BOX_SIZE);
 }
 
 let MOVES = {
@@ -43,7 +48,7 @@ let Snake = {
   body: null,
   draw: function() {
     for (let [x, y] of this.body) {
-      ctx.fillRect(x*BOX_SIZE,y*BOX_SIZE,FILL, FILL);
+      ctx.fillRect((x*BOX_SIZE)+LINE_WIDTH,(y*BOX_SIZE)+LINE_WIDTH,FILL, FILL);
     }
   },
   direction: MOVES.RIGHT,
@@ -69,11 +74,12 @@ let Snake = {
     } else if (this.direction === MOVES.DOWN) {
       newHead = [head[0],head[1]+1]
     } 
-    console.log(newHead);
-    if(!hasCollided(newHead)){
-      clearTail(tail);
-      Snake.body.push(newHead);
+    if(hasCollided(newHead)){
+      GAME_ACTIVE = false;
+      return
     }
+    clearTail(tail);
+    Snake.body.push(newHead);
   }
 }
 ctx.canvas.width = CANVAS_WIDTH;
@@ -119,9 +125,11 @@ function hasCollided([col, row]) {
 
 function step() {
   Snake.move();
-  setTimeout(() => {
-  requestAnimationFrame(step);
-  }, 1000/10);
+  if (GAME_ACTIVE) {
+    setTimeout(() => {
+    requestAnimationFrame(step);
+    }, 1000/10);
+  }
   Snake.draw();
 }
 document.addEventListener('keydown', handleInput);
