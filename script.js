@@ -8,8 +8,10 @@ const BOX_SIZE = 10;
 const FILL = BOX_SIZE * .8;
 const LINE_WIDTH = 1;
 let GAME_ACTIVE;
+let requestId;
 
 function initializeGrid() {
+  canvas.style.borderColor = "black";
   ctx.strokeStyle = "gray"
   for (let i = 0; i < ROWS; i++) {
     for (let j = 0; j < COLS; j++) {
@@ -19,7 +21,8 @@ function initializeGrid() {
 }
 
 function initializeSnake() {
-  Snake.body = Snake.init_snake;
+  Snake.body = [...Snake.init_snake];
+  Snake.direction = MOVES.RIGHT;
   Snake.draw();
 }
 
@@ -27,12 +30,20 @@ function startGame() {
   initializeGrid();
   initializeSnake();
   GAME_ACTIVE = true;
+  console.log(GAME_ACTIVE);
   step();
 }
 
 function endGame() {
+  cancelAnimationFrame(requestId);
   GAME_ACTIVE = false;
   canvas.style.borderColor = "red";
+}
+
+function restartGame() {
+  endGame();
+  ctx.clearRect(0,0,CANVAS_WIDTH, CANVAS_HEIGHT);
+  startGame();
 }
 
 function clearTail([col, row]) {
@@ -99,6 +110,10 @@ ctx.canvas.height = CANVAS_HEIGHT;
 
 function handleInput(event) {
   switch (event.key) {
+    case "r":
+    case "R":
+      restartGame();
+      break;
     case "w":
     case "W":
     case "ArrowUp":
@@ -133,10 +148,11 @@ function hasCollided([col, row]) {
 } 
 
 function step() {
+  console.log(GAME_ACTIVE,"at step");
   Snake.move();
   if (GAME_ACTIVE) {
     setTimeout(() => {
-    requestAnimationFrame(step);
+    requestId = requestAnimationFrame(step);
     }, 1000/10);
   }
   Snake.draw();
