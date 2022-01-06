@@ -7,27 +7,38 @@ const COLS = 50;
 const BOX_SIZE = 10;
 const FILL = BOX_SIZE * .8;
 const LINE_WIDTH = 1;
-let GAME_ACTIVE = true;
+let GAME_ACTIVE;
 
 function initializeGrid() {
   ctx.strokeStyle = "gray"
   for (let i = 0; i < ROWS; i++) {
     for (let j = 0; j < COLS; j++) {
       ctx.strokeRect(j * BOX_SIZE, i * BOX_SIZE, BOX_SIZE, BOX_SIZE);
-      console.log(j,i);
     }
   }
+}
+
+function initializeSnake() {
   Snake.body = Snake.init_snake;
   Snake.draw();
-
 }
+
+function startGame() {
+  initializeGrid();
+  initializeSnake();
+  GAME_ACTIVE = true;
+  step();
+}
+
+function endGame() {
+  GAME_ACTIVE = false;
+  canvas.style.borderColor = "red";
+}
+
 function clearTail([col, row]) {
-  console.log(col, row);
   let top = row * BOX_SIZE;
   let left = col * BOX_SIZE;
   ctx.clearRect(left+LINE_WIDTH, top+LINE_WIDTH, FILL, FILL);
-  ctx.strokeStyle = "gray"
-//  ctx.strokeRect(left, top, BOX_SIZE, BOX_SIZE);
 }
 
 let MOVES = {
@@ -55,7 +66,7 @@ let Snake = {
   addDirection: function (dir) {
     if ((this.direction === MOVES.RIGHT && dir === MOVES.LEFT) || (this.direction === MOVES.LEFT && dir === MOVES.RIGHT)) {
       return
-    } else if ((this.direction === MOVES.UP && dir === MOVES.DOWN) || (this.direction === MOVES.UP && dir === MOVES.DOWN)){
+    } else if ((this.direction === MOVES.UP && dir === MOVES.DOWN) || (this.direction === MOVES.DOWN && dir === MOVES.UP)){
       return
     }
     this.direction = dir
@@ -75,7 +86,7 @@ let Snake = {
       newHead = [head[0],head[1]+1]
     } 
     if(hasCollided(newHead)){
-      GAME_ACTIVE = false;
+      endGame();
       return
     }
     clearTail(tail);
@@ -109,17 +120,15 @@ function handleInput(event) {
       Snake.addDirection(MOVES.LEFT);
       break;
   }
-
 }
+
 function hasCollided([col, row]) {
   let top = row * BOX_SIZE;
   let left = col * BOX_SIZE;
-  //console.log(top, left);
   let ans = false;
   if ((top >= CANVAS_HEIGHT) || (top < 0) || (left >= CANVAS_WIDTH) || (left < 0)) {
     ans = true;
   }
-  
   return ans
 } 
 
@@ -132,6 +141,6 @@ function step() {
   }
   Snake.draw();
 }
+
 document.addEventListener('keydown', handleInput);
-initializeGrid();
-step();
+startGame();
