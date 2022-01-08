@@ -29,8 +29,7 @@ function initializeSnake() {
 function startGame() {
   initializeGrid();
   initializeSnake();
-  GAME_ACTIVE = true;
-  console.log(GAME_ACTIVE);
+  //GAME_ACTIVE = true;
   step();
 }
 
@@ -42,8 +41,12 @@ function endGame() {
 
 function restartGame() {
   endGame();
-  ctx.clearRect(0,0,CANVAS_WIDTH, CANVAS_HEIGHT);
+  clearCanvas();
   startGame();
+}
+
+function clearCanvas() {
+  ctx.clearRect(0,0,CANVAS_WIDTH, CANVAS_HEIGHT);
 }
 
 function clearTail([col, row]) {
@@ -75,6 +78,7 @@ let Snake = {
   },
   direction: MOVES.RIGHT,
   addDirection: function (dir) {
+    if (!GAME_ACTIVE) return;
     if ((this.direction === MOVES.RIGHT && dir === MOVES.LEFT) || (this.direction === MOVES.LEFT && dir === MOVES.RIGHT)) {
       return
     } else if ((this.direction === MOVES.UP && dir === MOVES.DOWN) || (this.direction === MOVES.DOWN && dir === MOVES.UP)){
@@ -110,8 +114,16 @@ ctx.canvas.height = CANVAS_HEIGHT;
 
 function handleInput(event) {
   switch (event.key) {
+    case "g":
+    case "G":
+      if (!GAME_ACTIVE) {
+	GAME_ACTIVE = true;
+	step();
+      }
+      break;
     case "r":
     case "R":
+      cancelAnimationFrame(requestId);
       restartGame();
       break;
     case "w":
@@ -148,14 +160,13 @@ function hasCollided([col, row]) {
 } 
 
 function step() {
-  console.log(GAME_ACTIVE,"at step");
-  Snake.move();
   if (GAME_ACTIVE) {
+    Snake.move();
     setTimeout(() => {
     requestId = requestAnimationFrame(step);
     }, 1000/10);
+    Snake.draw();
   }
-  Snake.draw();
 }
 
 document.addEventListener('keydown', handleInput);
